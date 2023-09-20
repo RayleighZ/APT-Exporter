@@ -43,18 +43,6 @@ func addCountByUid(uid string, useTime float64) {
 	}
 }
 
-func getUidViaPid(pid string) string {
-	cmd := "ps -p " + pid + " -o uid"
-	res := utils.ExecAndGetRes(cmd)
-	lines := strings.Split(res, "\n")
-	if len(lines) == 1 {
-		return "none"
-	}
-	res = strings.Split(res, "\n")[1]
-	uid := strings.Fields(res)[0]
-	return uid
-}
-
 func collectCudaOnTime() {
 	workingList := make(map[string]bool)
 	res := utils.ExecAndGetRes("nvidia-smi")
@@ -71,7 +59,7 @@ func collectCudaOnTime() {
 		fields := strings.Fields(cudaInfo)
 		fields = fields[1 : len(fields)-1]
 		pid := fields[3]
-		uid := getUidViaPid(pid)
+		uid := utils.GetUidViaPid(pid)
 		log.Println(uid)
 		if uid != "none" {
 			workingList[uid] = true
