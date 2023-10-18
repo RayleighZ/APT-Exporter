@@ -5,6 +5,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -16,7 +17,7 @@ type CudaGauge struct {
 
 var cudaGaugeMap = make(map[string]CudaGauge)
 
-// init user cuda gauge from ./user.json
+// init user cuda gauge from ./user_info
 func initCudaUser() {
 	var userList = utils.GetUser()
 	log.Println("userlist")
@@ -47,10 +48,11 @@ func collectCudaOnTime() {
 	workingList := make(map[string]bool)
 	res := utils.ExecAndGetRes("nvidia-smi")
 	smiInfo := strings.Split(res, "\n")
-	cudaUserInfoSplitLine := "ID   ID                                                             Usage"
+	cudaUserInfoSplitPattern := `ID\s*ID\s*Usage`
+	re := regexp.MustCompile(cudaUserInfoSplitPattern)
 	cudaInfoIndex := -1
 	for i, s := range smiInfo {
-		if strings.Contains(s, cudaUserInfoSplitLine) {
+		if re.MatchString(s) {
 			cudaInfoIndex = i + 1
 		}
 	}
